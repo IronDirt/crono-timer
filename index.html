@@ -1,577 +1,814 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crono &amp; Timer</title>
+<!doctype html>
+<html lang="it">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch &amp; Timer</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <style>
-    :root {
-      --bg: #f0f2f5;
-      --widget-bg: #ffffff;
-      --widget-shadow: 0 4px 24px rgba(0,0,0,.10);
-      --text: #1a1a2e;
-      --subtext: #555;
-      --accent: #4361ee;
-      --accent-hover: #3a56d4;
-      --btn-secondary: #e9ecef;
-      --btn-secondary-hover: #dee2e6;
-      --btn-danger: #ef233c;
-      --btn-danger-hover: #d62839;
-      --border: #dee2e6;
-      --header-bg: #ffffff;
-      --header-shadow: 0 2px 8px rgba(0,0,0,.08);
-      --display-bg: #f8f9fa;
-      --lap-bg: #f8f9fa;
-      --lap-border: #e9ecef;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    [data-theme="dark"] {
-      --bg: #0d1117;
-      --widget-bg: #161b22;
-      --widget-shadow: 0 4px 24px rgba(0,0,0,.40);
-      --text: #e6edf3;
-      --subtext: #8b949e;
-      --accent: #58a6ff;
-      --accent-hover: #79b8ff;
-      --btn-secondary: #21262d;
-      --btn-secondary-hover: #30363d;
-      --btn-danger: #f85149;
-      --btn-danger-hover: #ff6b6b;
-      --border: #30363d;
-      --header-bg: #161b22;
-      --header-shadow: 0 2px 8px rgba(0,0,0,.40);
-      --display-bg: #0d1117;
-      --lap-bg: #0d1117;
-      --lap-border: #21262d;
+
+    html, body {
+      height: 100%;
+      width: 100%;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background .3s, color .3s;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    header {
-      background: var(--header-bg);
-      box-shadow: var(--header-shadow);
-      padding: .75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      transition: background .3s;
+
+    body.light-theme {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+      color: #1a1a1a;
     }
-    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: .03em; color: var(--accent); }
-    .header-controls { display: flex; gap: .5rem; align-items: center; }
-    .icon-btn {
-      background: var(--btn-secondary);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      cursor: pointer;
-      font-size: .85rem;
-      font-weight: 600;
-      padding: .45rem .85rem;
-      display: flex;
-      align-items: center;
-      gap: .35rem;
-      transition: background .2s, color .2s;
-      user-select: none;
+
+    body.dark-theme {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f0f0f0;
     }
-    .icon-btn:hover { background: var(--btn-secondary-hover); }
-    .icon-btn svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
-    main {
-      flex: 1;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      padding: 2rem 1.5rem;
-      justify-content: center;
-      align-items: stretch;
+
+    .widget-container {
+      max-width: 450px;
+      margin: 0 auto;
+      padding: 20px;
     }
+
     .widget {
-      background: var(--widget-bg);
-      border: 1px solid var(--border);
       border-radius: 20px;
-      box-shadow: var(--widget-shadow);
-      padding: 1.75rem 1.5rem 1.5rem;
-      width: 340px;
-      max-width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      transition: background .3s, border-color .3s;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
     }
-    .widget-header { display: flex; align-items: center; justify-content: space-between; }
-    .widget-title { font-size: 1rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--subtext); }
-    .fullscreen-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--subtext);
-      cursor: pointer;
-      padding: .35rem .5rem;
+
+    .light-theme .widget {
+      background: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .dark-theme .widget {
+      background: #1e293b;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .display {
+      font-size: 3.5rem;
+      font-weight: 700;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.1em;
+      margin: 30px 0;
+      min-height: 100px;
       display: flex;
       align-items: center;
-      transition: background .2s;
+      justify-content: center;
     }
-    .fullscreen-btn:hover { background: var(--btn-secondary); color: var(--text); }
-    .fullscreen-btn svg { width: 1.1em; height: 1.1em; }
-    .display {
-      background: var(--display-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem .5rem;
-      text-align: center;
-      transition: background .3s, border-color .3s;
+
+    .light-theme .display {
+      color: #2563eb;
     }
-    .time-display {
-      font-size: 3.2rem; font-weight: 700;
-      letter-spacing: .06em; font-variant-numeric: tabular-nums;
-      line-height: 1; font-family: 'Courier New', monospace; color: var(--text);
+
+    .dark-theme .display {
+      color: #60a5fa;
     }
-    .ms-display { display: none; }
-    .controls { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     .btn {
-      border: none; border-radius: 10px; cursor: pointer;
-      font-size: .9rem; font-weight: 600; padding: .6rem 1.2rem;
-      transition: background .2s, transform .1s;
-      user-select: none; display: flex; align-items: center; gap: .4rem;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .btn:active { transform: scale(.96); }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-secondary { background: var(--btn-secondary); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--btn-secondary-hover); }
-    .btn-danger { background: var(--btn-danger); color: #fff; }
-    .btn-danger:hover { background: var(--btn-danger-hover); }
-    .timer-inputs { display: flex; gap: .5rem; align-items: center; justify-content: center; }
-    .time-input-group { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
-    .time-input-group label { font-size: .7rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; }
-    .time-input-group input[type="number"] {
-      background: var(--display-bg); border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text); font-size: 1.4rem; font-family: 'Courier New', monospace;
-      font-weight: 600; text-align: center; width: 68px; padding: .4rem .2rem;
-      outline: none; transition: border-color .2s; -moz-appearance: textfield;
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
     }
-    .time-input-group input::-webkit-outer-spin-button,
-    .time-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .time-input-group input:focus { border-color: var(--accent); }
-    .time-sep { font-size: 1.8rem; font-weight: 300; color: var(--subtext); padding-bottom: .5rem; }
-    .lap-section { display: flex; flex-direction: column; gap: .5rem; }
-    .lap-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: .8rem; font-weight: 600; color: var(--subtext); text-transform: uppercase;
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-2px);
     }
-    .lap-list { list-style: none; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: .3rem; }
-    .lap-list::-webkit-scrollbar { width: 4px; }
-    .lap-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .btn-primary.playing {
+      background: #22c55e;
+    }
+
+    .btn-primary.playing:hover {
+      background: #16a34a;
+    }
+
+    .btn-primary.paused {
+      background: #eab308;
+    }
+
+    .btn-primary.paused:hover {
+      background: #ca8a04;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #1a1a1a;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .dark-theme .btn-secondary {
+      background: #374151;
+      color: #f0f0f0;
+    }
+
+    .dark-theme .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .btn-reset {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #dc2626;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-fullscreen {
+      background: #8b5cf6;
+      color: white;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+    }
+
+    .btn-fullscreen:hover {
+      background: #7c3aed;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .title {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .controls-top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .theme-toggle, .language-toggle {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .light-theme .theme-toggle {
+      background: #e5e7eb;
+      color: #1a1a1a;
+    }
+
+    .light-theme .theme-toggle:hover {
+      background: #d1d5db;
+    }
+
+    .dark-theme .theme-toggle {
+      background: #374151;
+      color: #f0f0f0;
+    }
+
+    .dark-theme .theme-toggle:hover {
+      background: #4b5563;
+    }
+
+    .light-theme .language-toggle {
+      background: #e5e7eb;
+      color: #1a1a1a;
+    }
+
+    .light-theme .language-toggle:hover {
+      background: #d1d5db;
+    }
+
+    .dark-theme .language-toggle {
+      background: #374151;
+      color: #f0f0f0;
+    }
+
+    .dark-theme .language-toggle:hover {
+      background: #4b5563;
+    }
+
+    .fullscreen-mode {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    body.light-theme .fullscreen-mode {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+      color: #1a1a1a;
+    }
+
+    body.dark-theme .fullscreen-mode {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f0f0f0;
+    }
+
+    .fullscreen-mode .display {
+      font-size: 8rem;
+      margin: 40px 0;
+    }
+
+    .fullscreen-controls {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .fullscreen-controls .btn {
+      padding: 20px 40px;
+      font-size: 1.2rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    .light-theme .footer {
+      color: #666;
+    }
+
+    .dark-theme .footer {
+      color: #aaa;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .input-group input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .dark-theme .input-group input {
+      border-color: #374151;
+      background: #0f172a;
+      color: #f0f0f0;
+    }
+
+    .light-theme .input-group input {
+      background: #f9fafb;
+      color: #1a1a1a;
+    }
+
+    .laps-list {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .light-theme .laps-list {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+
+    .dark-theme .laps-list {
+      background: #0f172a;
+      border: 1px solid #374151;
+    }
+
     .lap-item {
-      background: var(--lap-bg); border: 1px solid var(--lap-border); border-radius: 8px;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: .35rem .75rem; font-size: .85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      font-weight: 600;
     }
-    .lap-item span:first-child { color: var(--subtext); font-weight: 600; }
-    .progress-ring-wrap { display: flex; justify-content: center; align-items: center; position: relative; }
-    .progress-ring-wrap svg { transform: rotate(-90deg); overflow: visible; }
-    .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
-    .ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .3s; }
-    .ring-label { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-    .ring-time { font-size: 2rem; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: .05em; color: var(--text); line-height: 1; }
-    .ring-status { font-size: .75rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
-    @keyframes pulse-alarm { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .alarm-active .ring-fg { stroke: var(--btn-danger); animation: pulse-alarm .6s infinite; }
-    .alarm-active .ring-time { color: var(--btn-danger); }
-    .fs-overlay {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: var(--bg); flex-direction: column;
-      align-items: center; justify-content: center; gap: 2rem; transition: background .3s;
+
+    .light-theme .lap-item {
+      background: white;
+      color: #1a1a1a;
+      border: 1px solid #e5e7eb;
     }
-    .fs-overlay.open { display: flex; }
-    .fs-close-btn {
-      position: absolute; top: 1.5rem; right: 1.5rem;
-      background: var(--btn-secondary); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text); cursor: pointer;
-      font-size: .9rem; font-weight: 600; padding: .5rem 1rem;
-      display: flex; align-items: center; gap: .4rem; transition: background .2s;
+
+    .dark-theme .lap-item {
+      background: #1e293b;
+      color: #f0f0f0;
+      border: 1px solid #374151;
     }
-    .fs-close-btn:hover { background: var(--btn-secondary-hover); }
-    .fs-title { font-size: 1.1rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--subtext); }
-    .fs-time {
-      font-size: clamp(5rem,20vw,14rem); font-weight: 700;
-      font-family: 'Courier New', monospace; letter-spacing: .04em;
-      color: var(--text); line-height: 1; text-align: center;
+
+    .lap-number {
+      color: #8b5cf6;
+      font-weight: 700;
+      min-width: 50px;
     }
-    .fs-ms { display: none; }
-    .fs-controls { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-    .fs-controls .btn { font-size: 1.1rem; padding: .8rem 1.8rem; }
-    footer { text-align: center; padding: 1rem; font-size: .8rem; color: var(--subtext); border-top: 1px solid var(--border); transition: border-color .3s; }
-    @media(max-width:480px){.widget{width:100%}main{padding:1rem;gap:1rem}}
+
+    .lap-time {
+      flex: 1;
+      text-align: center;
+    }
+
+    .clear-laps-btn {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      background: #ef4444;
+      color: white;
+    }
+
+    .clear-laps-btn:hover {
+      background: #dc2626;
+    }
+
+    @media (max-width: 480px) {
+      .display {
+        font-size: 2.5rem;
+        margin: 20px 0;
+      }
+
+      .fullscreen-mode .display {
+        font-size: 5rem;
+      }
+
+      .btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .controls-top {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    i[data-lucide] {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
   </style>
-</head>
-<body data-theme="light">
-
-<header>
-  <h1>&#9201; Crono &amp; Timer</h1>
-  <div class="header-controls">
-    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">
-      <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="currentColor" style="display:block"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
-      <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="currentColor" style="display:none">
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span id="theme-label">Dark</span>
-    </button>
-  </div>
-</header>
-
-<main>
-  <section class="widget" id="stopwatch-widget">
-    <div class="widget-header">
-      <span class="widget-title" data-i18n="sw-title">Stopwatch</span>
-      <button class="fullscreen-btn" onclick="openFS('stopwatch')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-        </svg>
-      </button>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="light-theme">
+  <div class="widget-container">
+   <div class="header">
+    <h1 class="title" id="appTitle">Stopwatch &amp; Timer</h1>
+    <div class="controls-top">
+     <button class="theme-toggle" id="themeToggle">🌙</button>
     </div>
-    <div class="display">
-      <div class="time-display" id="sw-display">00:00:00</div>
-      <div class="ms-display" id="sw-ms">.000</div>
+   </div><!-- CRONOMETRO -->
+   <div class="widget">
+    <h2 id="stopwatchTitle" style="text-align: center; margin-bottom: 20px; font-size: 1.3rem;">Cronometro</h2>
+    <div class="display" id="stopwatchDisplay">
+     00:00:00
     </div>
     <div class="controls">
-      <button class="btn btn-primary" id="sw-start-btn" onclick="swToggle()">
-        <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        <span data-i18n="start">Start</span>
-      </button>
-      <button class="btn btn-secondary" onclick="swLap()">
-        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span data-i18n="lap">Lap</span>
-      </button>
-      <button class="btn btn-danger" onclick="swReset()">
-        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-        <span data-i18n="reset">Reset</span>
-      </button>
+     <button class="btn btn-primary" id="stopwatchStart"> <i data-lucide="play"></i> <span id="stopwatchStartText">Start</span> </button> <button class="btn btn-secondary" id="stopwatchLap"> <i data-lucide="flag"></i> <span id="stopwatchLapText">Giro</span> </button> <button class="btn btn-reset" id="stopwatchReset"> <i data-lucide="rotate-ccw"></i> <span id="stopwatchResetText">Reset</span> </button> <button class="btn btn-fullscreen" id="stopwatchFullscreen"> <i data-lucide="maximize-2"></i> </button>
     </div>
-    <div class="lap-section" id="sw-lap-section" style="display:none">
-      <div class="lap-section-header">
-        <span data-i18n="laps">Laps</span>
-        <span id="sw-lap-count">0</span>
-      </div>
-      <ul class="lap-list" id="sw-lap-list"></ul>
+    <div class="laps-list" id="stopwatchLapsList"></div>
+   </div><!-- TIMER -->
+   <div class="widget">
+    <h2 id="timerTitle" style="text-align: center; margin-bottom: 20px; font-size: 1.3rem;">Timer</h2>
+    <div class="input-group" id="timerInputGroup">
+     <input type="number" id="timerMinutes" min="0" max="59" placeholder="Minuti" value="1"> <span>:</span> <input type="number" id="timerSeconds" min="0" max="59" placeholder="Secondi" value="0">
     </div>
-  </section>
-
-  <section class="widget" id="timer-widget">
-    <div class="widget-header">
-      <span class="widget-title" data-i18n="t-title">Timer</span>
-      <button class="fullscreen-btn" onclick="openFS('timer')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-        </svg>
-      </button>
-    </div>
-    <div class="progress-ring-wrap" id="timer-ring-wrap">
-      <svg width="220" height="220" viewBox="0 0 220 220">
-        <circle class="ring-bg" cx="110" cy="110" r="100"/>
-        <circle class="ring-fg" id="ring-fg" cx="110" cy="110" r="100" stroke-dasharray="628.32" stroke-dashoffset="0"/>
-      </svg>
-      <div class="ring-label">
-        <span class="ring-time" id="t-display">00:05:00</span>
-        <span class="ring-status" id="t-status" data-i18n="t-ready">Ready</span>
-      </div>
-    </div>
-    <div class="timer-inputs" id="t-inputs">
-      <div class="time-input-group">
-        <label data-i18n="hours">Hours</label>
-        <input type="number" id="t-h" min="0" max="99" value="0" onchange="timerInputChange()"/>
-      </div>
-      <span class="time-sep">:</span>
-      <div class="time-input-group">
-        <label data-i18n="minutes">Min</label>
-        <input type="number" id="t-m" min="0" max="59" value="5" onchange="timerInputChange()"/>
-      </div>
-      <span class="time-sep">:</span>
-      <div class="time-input-group">
-        <label data-i18n="seconds">Sec</label>
-        <input type="number" id="t-s" min="0" max="59" value="0" onchange="timerInputChange()"/>
-      </div>
+    <div class="display" id="timerDisplay">
+     00:00
     </div>
     <div class="controls">
-      <button class="btn btn-primary" id="t-start-btn" onclick="tToggle()">
-        <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        <span data-i18n="start">Start</span>
-      </button>
-      <button class="btn btn-danger" onclick="tReset()">
-        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-        <span data-i18n="reset">Reset</span>
-      </button>
+     <button class="btn btn-primary" id="timerStart"> <i data-lucide="play"></i> <span id="timerStartText">Avvia</span> </button> <button class="btn btn-reset" id="timerReset"> <i data-lucide="rotate-ccw"></i> <span id="timerResetText">Ripristina</span> </button> <button class="btn btn-fullscreen" id="timerFullscreen"> <i data-lucide="maximize-2"></i> </button>
     </div>
-  </section>
-</main>
-
-<footer>
-  <span data-i18n="copyright">&copy; 2024 Crono &amp; Timer. All rights reserved.</span>
-</footer>
-
-<div class="fs-overlay" id="fs-stopwatch">
-  <button class="fs-close-btn" onclick="closeFS('stopwatch')">
-    <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    <span data-i18n="close">Close</span>
-  </button>
-  <div class="fs-title" data-i18n="sw-title">Stopwatch</div>
-  <div>
-    <div class="fs-time" id="fs-sw-display">00:00:00</div>
-    <div class="fs-ms" style="text-align:center" id="fs-sw-ms">.000</div>
+   </div><!-- FOOTER -->
+   <div class="footer" id="footer">
+    © 2024 Stopwatch &amp; Timer. Tutti i diritti riservati.
+   </div>
+  </div><!-- FULLSCREEN STOPWATCH -->
+  <div id="stopwatchFullscreenMode" class="fullscreen-mode" style="display: none;">
+   <button class="btn btn-danger" id="exitStopwatchFullscreen" style="position: absolute; top: 20px; right: 20px;"> <i data-lucide="x"></i> <span id="exitText">Esci</span> </button>
+   <div class="display" id="stopwatchFullscreenDisplay">
+    00:00:00
+   </div>
+   <div class="fullscreen-controls">
+    <button class="btn btn-primary" id="stopwatchFullscreenStart"> <i data-lucide="play"></i> <span id="stopwatchFsStartText">Start</span> </button> <button class="btn btn-secondary" id="stopwatchFullscreenLap"> <i data-lucide="flag"></i> <span id="stopwatchFsLapText">Giro</span> </button> <button class="btn btn-reset" id="stopwatchFullscreenReset"> <i data-lucide="rotate-ccw"></i> <span id="stopwatchFsResetText">Reset</span> </button>
+   </div>
+   <div class="laps-list" id="stopwatchFullscreenLapsList"></div>
+  </div><!-- FULLSCREEN TIMER -->
+  <div id="timerFullscreenMode" class="fullscreen-mode" style="display: none;">
+   <button class="btn btn-danger" id="exitTimerFullscreen" style="position: absolute; top: 20px; right: 20px;"> <i data-lucide="x"></i> <span id="exitText2">Esci</span> </button>
+   <div class="display" id="timerFullscreenDisplay">
+    00:00
+   </div>
+   <div class="fullscreen-controls">
+    <button class="btn btn-primary" id="timerFullscreenStart"> <i data-lucide="play"></i> <span id="timerFsStartText">Avvia</span> </button> <button class="btn btn-reset" id="timerFullscreenReset"> <i data-lucide="rotate-ccw"></i> <span id="timerFsResetText">Ripristina</span> </button>
+   </div>
   </div>
-  <div class="fs-controls">
-    <button class="btn btn-primary" id="fs-sw-start-btn" onclick="swToggle()">
-      <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-      <span data-i18n="start">Start</span>
-    </button>
-    <button class="btn btn-secondary" onclick="swLap()">
-      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span data-i18n="lap">Lap</span>
-    </button>
-    <button class="btn btn-danger" onclick="swReset()">
-      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-      <span data-i18n="reset">Reset</span>
-    </button>
-  </div>
-</div>
+  <script>
+    const defaultConfig = {
+      app_title: "Stopwatch & Timer"
+    };
+    let config = { ...defaultConfig };
 
-<div class="fs-overlay" id="fs-timer">
-  <button class="fs-close-btn" onclick="closeFS('timer')">
-    <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    <span data-i18n="close">Close</span>
-  </button>
-  <div class="fs-title" data-i18n="t-title">Timer</div>
-  <div class="fs-time" id="fs-t-display">00:05:00</div>
-  <div class="fs-controls">
-    <button class="btn btn-primary" id="fs-t-start-btn" onclick="tToggle()">
-      <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-      <span data-i18n="start">Start</span>
-    </button>
-    <button class="btn btn-danger" onclick="tReset()">
-      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
-      <span data-i18n="reset">Reset</span>
-    </button>
-  </div>
-</div>
+    // Traduzioni
+    const translations = {
+      it: {
+        stopwatch: "Cronometro",
+        timer: "Timer",
+        start: "Start",
+        pause: "Pause",
+        reset: "Reset",
+        exit: "Esci",
+        copyright: "© 2024 Stopwatch & Timer. Tutti i diritti riservati.",
+        minutes: "Minuti",
+        seconds: "Secondi"
+      }
+    };
 
-<script>
-var LANGS = {
-  it: {
-    'sw-title':'Cronometro','t-title':'Timer',
-    'start':'Avvia','pause':'Pausa','lap':'Giro',
-    'reset':'Reset','laps':'Giri','close':'Chiudi',
-    't-ready':'Pronto','t-running':'In corso','t-paused':'In pausa','t-done':'Tempo!',
-    'hours':'Ore','minutes':'Min','seconds':'Sec',
-    'copyright':'\u00a9 2024 Crono & Timer. Tutti i diritti riservati.',
-    'theme-dark':'Dark','theme-light':'Light'
-  },
-  en: {
-    'sw-title':'Stopwatch','t-title':'Timer',
-    'start':'Start','pause':'Pause','lap':'Lap',
-    'reset':'Reset','laps':'Laps','close':'Close',
-    't-ready':'Ready','t-running':'Running','t-paused':'Paused','t-done':'Time!',
-    'hours':'Hours','minutes':'Min','seconds':'Sec',
-    'copyright':'\u00a9 2024 Crono & Timer. All rights reserved.',
-    'theme-dark':'Dark','theme-light':'Light'
-  }
-};
-var currentLang='en';
-function setLang(lang){
-  currentLang=lang;
-  document.documentElement.lang=lang;
-  document.querySelectorAll('[data-i18n]').forEach(function(el){
-    var k=el.getAttribute('data-i18n');
-    if(LANGS[lang][k]!==undefined) el.textContent=LANGS[lang][k];
-  });
-  updateSwButtons(); updateTimerButtons();
-  var isDark=document.body.getAttribute('data-theme')==='dark';
-  document.getElementById('theme-label').textContent=isDark?LANGS[lang]['theme-light']:LANGS[lang]['theme-dark'];
-}
-function toggleTheme(){
-  var body=document.body;
-  var isDark=body.getAttribute('data-theme')==='dark';
-  body.setAttribute('data-theme',isDark?'light':'dark');
-  document.getElementById('theme-icon-moon').style.display=isDark?'block':'none';
-  document.getElementById('theme-icon-sun').style.display=isDark?'none':'block';
-  document.getElementById('theme-label').textContent=isDark?LANGS[currentLang]['theme-dark']:LANGS[currentLang]['theme-light'];
-}
-var swRunning=false,swStartTime=0,swElapsed=0,swRaf=null,swLaps=[];
-function swTick(){
-  swElapsed=performance.now()-swStartTime;
-  renderSw(swElapsed);
-  swRaf=requestAnimationFrame(swTick);
-}
-function renderSw(ms){
-  var t=Math.floor(ms);
-  var h=Math.floor(t/3600000),m=Math.floor((t%3600000)/60000),s=Math.floor((t%60000)/1000),msRemainder=t%1000;
-  var f=pad(h)+':'+pad(m)+':'+pad(s);
-  var mf='.'+String(msRemainder).padStart(3,'0');
-  document.getElementById('sw-display').textContent=f;
-  document.getElementById('sw-ms').textContent=mf;
-  document.getElementById('fs-sw-display').textContent=f;
-  document.getElementById('fs-sw-ms').textContent=mf;
-}
-function swToggle(){
-  if(swRunning){swRunning=false;swElapsed=performance.now()-swStartTime;cancelAnimationFrame(swRaf);}
-  else{swRunning=true;swStartTime=performance.now()-swElapsed;swRaf=requestAnimationFrame(swTick);}
-  updateSwButtons();
-}
-function swReset(){
-  swRunning=false;cancelAnimationFrame(swRaf);swElapsed=0;swStartTime=0;swLaps=[];
-  renderSw(0);updateSwButtons();
-  document.getElementById('sw-lap-section').style.display='none';
-  document.getElementById('sw-lap-list').innerHTML='';
-  document.getElementById('sw-lap-count').textContent='0';
-}
-function swLap(){
-  if(!swRunning&&swElapsed===0)return;
-  var now=swRunning?performance.now()-swStartTime:swElapsed;
-  swLaps.push(now);
-  document.getElementById('sw-lap-section').style.display='flex';
-  var list=document.getElementById('sw-lap-list');
-  var li=document.createElement('li');li.className='lap-item';
-  var lapMs=swLaps.length>1?now-swLaps[swLaps.length-2]:now;
-  var s1=document.createElement('span');s1.textContent='#'+swLaps.length;
-  var s2=document.createElement('span');s2.textContent=formatMs(now);
-  var s3=document.createElement('span');s3.style.color='var(--subtext)';s3.style.fontSize='.78rem';s3.textContent='+'+formatMs(lapMs);
-  li.appendChild(s1);li.appendChild(s2);li.appendChild(s3);
-  list.prepend(li);
-  document.getElementById('sw-lap-count').textContent=swLaps.length;
-}
-function updateSwButtons(){
-  var label=swRunning?LANGS[currentLang]['pause']:LANGS[currentLang]['start'];
-  ['sw-start-btn','fs-sw-start-btn'].forEach(function(id){
-    var btn=document.getElementById(id);
-    if(!btn)return;
-    btn.querySelector('.icon-play').style.display=swRunning?'none':'block';
-    btn.querySelector('.icon-pause').style.display=swRunning?'block':'none';
-    btn.querySelector('span').textContent=label;
-  });
-}
-var RING_CIRC=2*Math.PI*100;
-var tRunning=false,tTotalMs=300000,tRemainingMs=300000,tStartTime=0,tRaf=null,tAlarm=false;
-function timerInputChange(){
-  if(tRunning)return;
-  tTotalMs=getInputMs();tRemainingMs=tTotalMs;renderTimer(tRemainingMs);
-  tAlarm=false;document.getElementById('timer-ring-wrap').classList.remove('alarm-active');
-  setTimerStatus('t-ready');
-}
-function getInputMs(){
-  var h=parseInt(document.getElementById('t-h').value)||0;
-  var m=parseInt(document.getElementById('t-m').value)||0;
-  var s=parseInt(document.getElementById('t-s').value)||0;
-  return(h*3600+m*60+s)*1000;
-}
-function tTick(){
-  var elapsed=performance.now()-tStartTime;
-  tRemainingMs=Math.max(0,tTotalMs-elapsed);
-  renderTimer(tRemainingMs);
-  if(tRemainingMs<=0){
-    tRunning=false;tAlarm=true;
-    document.getElementById('timer-ring-wrap').classList.add('alarm-active');
-    setTimerStatus('t-done');updateTimerButtons();triggerAlarm();return;
-  }
-  tRaf=requestAnimationFrame(tTick);
-}
-function renderTimer(ms){
-  var total=Math.ceil(ms);
-  var h=Math.floor(total/3600000),m=Math.floor((total%3600000)/60000),s=Math.floor((total%60000)/1000);
-  var f=pad(h)+':'+pad(m)+':'+pad(s);
-  document.getElementById('t-display').textContent=f;
-  document.getElementById('fs-t-display').textContent=f;
-  var frac=tTotalMs>0?ms/tTotalMs:0;
-  document.getElementById('ring-fg').style.strokeDashoffset=RING_CIRC*(1-frac);
-}
-function tToggle(){
-  if(tAlarm){tReset();return;}
-  var ms=getInputMs();
-  if(!tRunning&&tRemainingMs<=0&&ms===0)return;
-  if(tRunning){
-    tRunning=false;tRemainingMs=Math.max(0,tTotalMs-(performance.now()-tStartTime));
-    cancelAnimationFrame(tRaf);setTimerStatus('t-paused');
-  }else{
-    if(tRemainingMs<=0){tTotalMs=ms;tRemainingMs=tTotalMs;}
-    tRunning=true;tTotalMs=tRemainingMs;tStartTime=performance.now();
-    tRaf=requestAnimationFrame(tTick);
-    document.getElementById('t-inputs').querySelectorAll('input').forEach(function(i){i.disabled=true;});
-    setTimerStatus('t-running');
-  }
-  updateTimerButtons();
-}
-function tReset(){
-  tRunning=false;cancelAnimationFrame(tRaf);tAlarm=false;
-  document.getElementById('timer-ring-wrap').classList.remove('alarm-active');
-  tTotalMs=getInputMs();tRemainingMs=tTotalMs;renderTimer(tRemainingMs);
-  document.getElementById('t-inputs').querySelectorAll('input').forEach(function(i){i.disabled=false;});
-  setTimerStatus('t-ready');updateTimerButtons();
-}
-function setTimerStatus(key){
-  var el=document.getElementById('t-status');
-  el.setAttribute('data-i18n',key);
-  el.textContent=LANGS[currentLang][key]||key;
-}
-function updateTimerButtons(){
-  var label=tRunning?LANGS[currentLang]['pause']:LANGS[currentLang]['start'];
-  ['t-start-btn','fs-t-start-btn'].forEach(function(id){
-    var btn=document.getElementById(id);
-    if(!btn)return;
-    btn.querySelector('.icon-play').style.display=tRunning?'none':'block';
-    btn.querySelector('.icon-pause').style.display=tRunning?'block':'none';
-    btn.querySelector('span').textContent=label;
-  });
-}
-var audioCtx=null;
-function triggerAlarm(){
-  try{
-    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    for(var i=0;i<3;i++){
-      (function(idx){
-        var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
-        osc.connect(gain);gain.connect(audioCtx.destination);
-        osc.type='sine';osc.frequency.value=880;
-        gain.gain.setValueAtTime(0.4,audioCtx.currentTime+idx*0.4);
-        gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+idx*0.4+0.35);
-        osc.start(audioCtx.currentTime+idx*0.4);
-        osc.stop(audioCtx.currentTime+idx*0.4+0.35);
-      })(i);
+    let currentLanguage = "it";
+    let currentTheme = "light";
+
+    // State
+    let stopwatchRunning = false;
+    let timerRunning = false;
+    let stopwatchMs = 0;
+    let timerMs = 0;
+    let stopwatchInterval = null;
+    let timerInterval = null;
+    let laps = [];
+    let lastLapTime = 0;
+
+    // Initialize
+    async function initElementSdk() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: (newConfig) => {
+            config = newConfig;
+            document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
+          },
+          mapToCapabilities: () => ({
+            recolorables: [],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: () => new Map([
+            ["app_title", config.app_title || defaultConfig.app_title]
+          ])
+        });
+      }
     }
-  }catch(e){}
-}
-function openFS(w){document.getElementById('fs-'+w).classList.add('open');document.body.style.overflow='hidden';}
-function closeFS(w){document.getElementById('fs-'+w).classList.remove('open');document.body.style.overflow='';}
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeFS('stopwatch');closeFS('timer');}});
-function pad(n){return String(n).padStart(2,'0');}
-function formatMs(ms){
-  var t=Math.floor(ms);
-  var h=Math.floor(t/3600000),m=Math.floor((t%3600000)/60000),s=Math.floor((t%60000)/1000),msRemainder=t%1000;
-  return pad(h)+':'+pad(m)+':'+pad(s)+'.'+String(msRemainder).padStart(3,'0');
-}
-renderTimer(tRemainingMs);
-renderSw(0);
-setLang('en');
-</script>
-</body>
+
+    initElementSdk();
+    lucide.createIcons();
+
+    // Theme Toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.classList.remove('light-theme', 'dark-theme');
+      document.body.classList.add(`${currentTheme}-theme`);
+      document.getElementById('themeToggle').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+      lucide.createIcons();
+    });
+
+    function updateLanguage() {
+      const t = translations[currentLanguage];
+      document.getElementById('stopwatchTitle').textContent = t.stopwatch;
+      document.getElementById('timerTitle').textContent = t.timer;
+      document.getElementById('stopwatchStartText').textContent = stopwatchRunning ? t.pause : t.start;
+      document.getElementById('stopwatchResetText').textContent = t.reset;
+      document.getElementById('timerStartText').textContent = timerRunning ? t.pause : t.start;
+      document.getElementById('timerResetText').textContent = t.reset;
+      document.getElementById('footer').textContent = t.copyright;
+      document.getElementById('timerMinutes').placeholder = t.minutes;
+      document.getElementById('timerSeconds').placeholder = t.seconds;
+      
+      // Fullscreen texts
+      document.getElementById('exitStopwatchFullscreen').innerHTML = `<i data-lucide="x"></i><span>${t.exit}</span>`;
+      document.getElementById('exitTimerFullscreen').innerHTML = `<i data-lucide="x"></i><span>${t.exit}</span>`;
+      document.getElementById('stopwatchFsStartText').textContent = stopwatchRunning ? t.pause : t.start;
+      document.getElementById('stopwatchFsResetText').textContent = t.reset;
+      document.getElementById('timerFsStartText').textContent = timerRunning ? t.pause : t.start;
+      document.getElementById('timerFsResetText').textContent = t.reset;
+      
+      lucide.createIcons();
+    }
+
+    // STOPWATCH FUNCTIONS
+    function formatStopwatch(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateStopwatchDisplay() {
+      document.getElementById('stopwatchDisplay').textContent = formatStopwatch(stopwatchMs);
+      document.getElementById('stopwatchFullscreenDisplay').textContent = formatStopwatch(stopwatchMs);
+    }
+
+    function toggleStopwatch() {
+      stopwatchRunning = !stopwatchRunning;
+      const t = translations[currentLanguage];
+      
+      // Update text
+      document.getElementById('stopwatchStartText').textContent = stopwatchRunning ? t.pause : t.start;
+      document.getElementById('stopwatchFsStartText').textContent = stopwatchRunning ? t.pause : t.start;
+      
+      // Update button classes and icons
+      const stopwatchStartBtn = document.getElementById('stopwatchStart');
+      const stopwatchFsStartBtn = document.getElementById('stopwatchFullscreenStart');
+      
+      if (stopwatchRunning) {
+        stopwatchStartBtn.classList.add('playing');
+        stopwatchStartBtn.classList.remove('paused');
+        stopwatchFsStartBtn.classList.add('playing');
+        stopwatchFsStartBtn.classList.remove('paused');
+        
+        stopwatchStartBtn.innerHTML = '<i data-lucide="pause"></i> <span id="stopwatchStartText">Pause</span>';
+        stopwatchFsStartBtn.innerHTML = '<i data-lucide="pause"></i> <span id="stopwatchFsStartText">Pause</span>';
+      } else {
+        stopwatchStartBtn.classList.add('paused');
+        stopwatchStartBtn.classList.remove('playing');
+        stopwatchFsStartBtn.classList.add('paused');
+        stopwatchFsStartBtn.classList.remove('playing');
+        
+        stopwatchStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="stopwatchStartText">Start</span>';
+        stopwatchFsStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="stopwatchFsStartText">Start</span>';
+      }
+      
+      lucide.createIcons();
+
+      if (stopwatchRunning) {
+        const startTime = Date.now() - stopwatchMs;
+        stopwatchInterval = setInterval(() => {
+          stopwatchMs = Date.now() - startTime;
+          updateStopwatchDisplay();
+        }, 10);
+      } else {
+        clearInterval(stopwatchInterval);
+      }
+    }
+
+    function resetStopwatch() {
+      stopwatchRunning = false;
+      stopwatchMs = 0;
+      laps = [];
+      lastLapTime = 0;
+      clearInterval(stopwatchInterval);
+      const t = translations[currentLanguage];
+      
+      const stopwatchStartBtn = document.getElementById('stopwatchStart');
+      const stopwatchFsStartBtn = document.getElementById('stopwatchFullscreenStart');
+      
+      stopwatchStartBtn.classList.remove('playing', 'paused');
+      stopwatchFsStartBtn.classList.remove('playing', 'paused');
+      
+      stopwatchStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="stopwatchStartText">Start</span>';
+      stopwatchFsStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="stopwatchFsStartText">Start</span>';
+      
+      lucide.createIcons();
+      updateStopwatchDisplay();
+      updateLapsList();
+    }
+
+    function recordLap() {
+      if (!stopwatchRunning) return;
+      
+      const lapTime = stopwatchMs - lastLapTime;
+      laps.push({
+        number: laps.length + 1,
+        time: lapTime,
+        totalTime: stopwatchMs
+      });
+      lastLapTime = stopwatchMs;
+      updateLapsList();
+    }
+
+    function updateLapsList() {
+      const list = document.getElementById('stopwatchLapsList');
+      const fullscreenList = document.getElementById('stopwatchFullscreenLapsList');
+      
+      list.innerHTML = '';
+      fullscreenList.innerHTML = '';
+      
+      if (laps.length === 0) return;
+      
+      [...laps].reverse().forEach(lap => {
+        const lapEl = document.createElement('div');
+        lapEl.className = 'lap-item';
+        lapEl.innerHTML = `
+          <span class="lap-number">Giro ${lap.number}</span>
+          <span class="lap-time">${formatStopwatch(lap.time)}</span>
+        `;
+        list.appendChild(lapEl);
+        fullscreenList.appendChild(lapEl.cloneNode(true));
+      });
+    }
+
+    // TIMER FUNCTIONS
+    function formatTimer(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timerDisplay').textContent = formatTimer(timerMs);
+      document.getElementById('timerFullscreenDisplay').textContent = formatTimer(timerMs);
+    }
+
+    function toggleTimer() {
+      if (!timerRunning) {
+        const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
+        const seconds = parseInt(document.getElementById('timerSeconds').value) || 0;
+        const totalMs = (minutes * 60 + seconds) * 1000;
+
+        if (totalMs <= 0) return;
+
+        timerMs = totalMs;
+        timerRunning = true;
+        document.getElementById('timerInputGroup').style.display = 'none';
+      } else {
+        timerRunning = false;
+        clearInterval(timerInterval);
+        document.getElementById('timerInputGroup').style.display = 'flex';
+      }
+
+      const t = translations[currentLanguage];
+      const timerStartBtn = document.getElementById('timerStart');
+      const timerFsStartBtn = document.getElementById('timerFullscreenStart');
+      
+      if (timerRunning) {
+        timerStartBtn.classList.add('playing');
+        timerStartBtn.classList.remove('paused');
+        timerFsStartBtn.classList.add('playing');
+        timerFsStartBtn.classList.remove('paused');
+        
+        timerStartBtn.innerHTML = '<i data-lucide="pause"></i> <span id="timerStartText">Pause</span>';
+        timerFsStartBtn.innerHTML = '<i data-lucide="pause"></i> <span id="timerFsStartText">Pause</span>';
+      } else {
+        timerStartBtn.classList.add('paused');
+        timerStartBtn.classList.remove('playing');
+        timerFsStartBtn.classList.add('paused');
+        timerFsStartBtn.classList.remove('playing');
+        
+        timerStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerStartText">Start</span>';
+        timerFsStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerFsStartText">Start</span>';
+      }
+      
+      lucide.createIcons();
+
+      if (timerRunning) {
+        const startTime = Date.now();
+        timerInterval = setInterval(() => {
+          timerMs -= Date.now() - startTime;
+          if (timerMs <= 0) {
+            timerMs = 0;
+            timerRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('timerInputGroup').style.display = 'flex';
+            
+            timerStartBtn.classList.remove('playing', 'paused');
+            timerFsStartBtn.classList.remove('playing', 'paused');
+            
+            timerStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerStartText">Start</span>';
+            timerFsStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerFsStartText">Start</span>';
+            
+            lucide.createIcons();
+          }
+          updateTimerDisplay();
+          startTime = Date.now();
+        }, 10);
+      }
+    }
+
+    function resetTimer() {
+      timerRunning = false;
+      timerMs = 0;
+      clearInterval(timerInterval);
+      document.getElementById('timerInputGroup').style.display = 'flex';
+      
+      const timerStartBtn = document.getElementById('timerStart');
+      const timerFsStartBtn = document.getElementById('timerFullscreenStart');
+      
+      timerStartBtn.classList.remove('playing', 'paused');
+      timerFsStartBtn.classList.remove('playing', 'paused');
+      
+      timerStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerStartText">Start</span>';
+      timerFsStartBtn.innerHTML = '<i data-lucide="play"></i> <span id="timerFsStartText">Start</span>';
+      
+      lucide.createIcons();
+      updateTimerDisplay();
+    }
+
+    // EVENT LISTENERS - STOPWATCH
+    document.getElementById('stopwatchStart').addEventListener('click', toggleStopwatch);
+    document.getElementById('stopwatchLap').addEventListener('click', recordLap);
+    document.getElementById('stopwatchReset').addEventListener('click', resetStopwatch);
+    document.getElementById('stopwatchFullscreenStart').addEventListener('click', toggleStopwatch);
+    document.getElementById('stopwatchFullscreenLap').addEventListener('click', recordLap);
+    document.getElementById('stopwatchFullscreenReset').addEventListener('click', resetStopwatch);
+
+    document.getElementById('stopwatchFullscreen').addEventListener('click', () => {
+      document.getElementById('stopwatchFullscreenMode').style.display = 'flex';
+    });
+
+    document.getElementById('exitStopwatchFullscreen').addEventListener('click', () => {
+      document.getElementById('stopwatchFullscreenMode').style.display = 'none';
+    });
+
+    // EVENT LISTENERS - TIMER
+    document.getElementById('timerStart').addEventListener('click', toggleTimer);
+    document.getElementById('timerReset').addEventListener('click', resetTimer);
+    document.getElementById('timerFullscreenStart').addEventListener('click', toggleTimer);
+    document.getElementById('timerFullscreenReset').addEventListener('click', resetTimer);
+
+    document.getElementById('timerFullscreen').addEventListener('click', () => {
+      document.getElementById('timerFullscreenMode').style.display = 'flex';
+    });
+
+    document.getElementById('exitTimerFullscreen').addEventListener('click', () => {
+      document.getElementById('timerFullscreenMode').style.display = 'none';
+    });
+
+    // Initial display
+    updateStopwatchDisplay();
+    updateTimerDisplay();
+    updateLanguage();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ddcf219c1a3985f',t:'MTc3Mzc2MDQ0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
