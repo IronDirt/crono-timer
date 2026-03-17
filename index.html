@@ -1,1 +1,582 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crono &amp; Timer</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --widget-bg: #ffffff;
+      --widget-shadow: 0 4px 24px rgba(0,0,0,.10);
+      --text: #1a1a2e;
+      --subtext: #555;
+      --accent: #4361ee;
+      --accent-hover: #3a56d4;
+      --btn-secondary: #e9ecef;
+      --btn-secondary-hover: #dee2e6;
+      --btn-danger: #ef233c;
+      --btn-danger-hover: #d62839;
+      --border: #dee2e6;
+      --header-bg: #ffffff;
+      --header-shadow: 0 2px 8px rgba(0,0,0,.08);
+      --display-bg: #f8f9fa;
+      --lap-bg: #f8f9fa;
+      --lap-border: #e9ecef;
+    }
+    [data-theme="dark"] {
+      --bg: #0d1117;
+      --widget-bg: #161b22;
+      --widget-shadow: 0 4px 24px rgba(0,0,0,.40);
+      --text: #e6edf3;
+      --subtext: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --btn-secondary: #21262d;
+      --btn-secondary-hover: #30363d;
+      --btn-danger: #f85149;
+      --btn-danger-hover: #ff6b6b;
+      --border: #30363d;
+      --header-bg: #161b22;
+      --header-shadow: 0 2px 8px rgba(0,0,0,.40);
+      --display-bg: #0d1117;
+      --lap-bg: #0d1117;
+      --lap-border: #21262d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background .3s, color .3s;
+    }
+    header {
+      background: var(--header-bg);
+      box-shadow: var(--header-shadow);
+      padding: .75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background .3s;
+    }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: .03em; color: var(--accent); }
+    .header-controls { display: flex; gap: .5rem; align-items: center; }
+    .icon-btn {
+      background: var(--btn-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: .45rem .85rem;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      transition: background .2s, color .2s;
+      user-select: none;
+    }
+    .icon-btn:hover { background: var(--btn-secondary-hover); }
+    .icon-btn svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+    .lang-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    main {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 2rem 1.5rem;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .widget {
+      background: var(--widget-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--widget-shadow);
+      padding: 1.75rem 1.5rem 1.5rem;
+      width: 340px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      transition: background .3s, border-color .3s;
+    }
+    .widget-header { display: flex; align-items: center; justify-content: space-between; }
+    .widget-title { font-size: 1rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--subtext); }
+    .fullscreen-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--subtext);
+      cursor: pointer;
+      padding: .35rem .5rem;
+      display: flex;
+      align-items: center;
+      transition: background .2s;
+    }
+    .fullscreen-btn:hover { background: var(--btn-secondary); color: var(--text); }
+    .fullscreen-btn svg { width: 1.1em; height: 1.1em; }
+    .display {
+      background: var(--display-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem .5rem;
+      text-align: center;
+      transition: background .3s, border-color .3s;
+    }
+    .time-display {
+      font-size: 3.2rem; font-weight: 300;
+      letter-spacing: .06em; font-variant-numeric: tabular-nums;
+      line-height: 1; font-family: 'Courier New', monospace; color: var(--text);
+    }
+    .ms-display { font-size: 1.4rem; font-weight: 300; color: var(--subtext); font-family: 'Courier New', monospace; }
+    .controls { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      border: none; border-radius: 10px; cursor: pointer;
+      font-size: .9rem; font-weight: 600; padding: .6rem 1.2rem;
+      transition: background .2s, transform .1s;
+      user-select: none; display: flex; align-items: center; gap: .4rem;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--btn-secondary); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--btn-secondary-hover); }
+    .btn-danger { background: var(--btn-danger); color: #fff; }
+    .btn-danger:hover { background: var(--btn-danger-hover); }
+    .timer-inputs { display: flex; gap: .5rem; align-items: center; justify-content: center; }
+    .time-input-group { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+    .time-input-group label { font-size: .7rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; }
+    .time-input-group input[type="number"] {
+      background: var(--display-bg); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 1.4rem; font-family: 'Courier New', monospace;
+      font-weight: 600; text-align: center; width: 68px; padding: .4rem .2rem;
+      outline: none; transition: border-color .2s; -moz-appearance: textfield;
+    }
+    .time-input-group input::-webkit-outer-spin-button,
+    .time-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .time-input-group input:focus { border-color: var(--accent); }
+    .time-sep { font-size: 1.8rem; font-weight: 300; color: var(--subtext); padding-bottom: .5rem; }
+    .lap-section { display: flex; flex-direction: column; gap: .5rem; }
+    .lap-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .8rem; font-weight: 600; color: var(--subtext); text-transform: uppercase;
+    }
+    .lap-list { list-style: none; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: .3rem; }
+    .lap-list::-webkit-scrollbar { width: 4px; }
+    .lap-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .lap-item {
+      background: var(--lap-bg); border: 1px solid var(--lap-border); border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .35rem .75rem; font-size: .85rem;
+    }
+    .lap-item span:first-child { color: var(--subtext); font-weight: 600; }
+    .progress-ring-wrap { display: flex; justify-content: center; align-items: center; position: relative; }
+    .progress-ring-wrap svg { transform: rotate(-90deg); overflow: visible; }
+    .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+    .ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .3s; }
+    .ring-label { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+    .ring-time { font-size: 2.4rem; font-weight: 300; font-family: 'Courier New', monospace; letter-spacing: .05em; color: var(--text); line-height: 1; }
+    .ring-status { font-size: .75rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
+    @keyframes pulse-alarm { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .alarm-active .ring-fg { stroke: var(--btn-danger); animation: pulse-alarm .6s infinite; }
+    .alarm-active .ring-time { color: var(--btn-danger); }
+    .fs-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: var(--bg); flex-direction: column;
+      align-items: center; justify-content: center; gap: 2rem; transition: background .3s;
+    }
+    .fs-overlay.open { display: flex; }
+    .fs-close-btn {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      background: var(--btn-secondary); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); cursor: pointer;
+      font-size: .9rem; font-weight: 600; padding: .5rem 1rem;
+      display: flex; align-items: center; gap: .4rem; transition: background .2s;
+    }
+    .fs-close-btn:hover { background: var(--btn-secondary-hover); }
+    .fs-title { font-size: 1.1rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--subtext); }
+    .fs-time {
+      font-size: clamp(5rem,20vw,14rem); font-weight: 200;
+      font-family: 'Courier New', monospace; letter-spacing: .04em;
+      color: var(--text); line-height: 1; text-align: center;
+    }
+    .fs-ms { font-size: clamp(2rem,6vw,4rem); font-weight: 200; font-family: 'Courier New', monospace; color: var(--subtext); }
+    .fs-controls { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .fs-controls .btn { font-size: 1.1rem; padding: .8rem 1.8rem; }
+    footer { text-align: center; padding: 1rem; font-size: .8rem; color: var(--subtext); border-top: 1px solid var(--border); transition: border-color .3s; }
+    @media(max-width:480px){.widget{width:100%}main{padding:1rem;gap:1rem}}
+  </style>
+</head>
+<body data-theme="light">
 
+<header>
+  <h1>&#9201; Crono &amp; Timer</h1>
+  <div class="header-controls">
+    <button class="icon-btn lang-btn active" id="btn-it" onclick="setLang('it')">&#127470;&#127481; IT</button>
+    <button class="icon-btn lang-btn" id="btn-en" onclick="setLang('en')">&#127468;&#127463; EN</button>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">
+      <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="currentColor" style="display:block"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span id="theme-label">Dark</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="widget" id="stopwatch-widget">
+    <div class="widget-header">
+      <span class="widget-title" data-i18n="sw-title">Cronometro</span>
+      <button class="fullscreen-btn" onclick="openFS('stopwatch')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+        </svg>
+      </button>
+    </div>
+    <div class="display">
+      <div class="time-display" id="sw-display">00:00:00</div>
+      <div class="ms-display" id="sw-ms">.000</div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-primary" id="sw-start-btn" onclick="swToggle()">
+        <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <span data-i18n="start">Avvia</span>
+      </button>
+      <button class="btn btn-secondary" onclick="swLap()">
+        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="lap">Giro</span>
+      </button>
+      <button class="btn btn-danger" onclick="swReset()">
+        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        <span data-i18n="reset">Reset</span>
+      </button>
+    </div>
+    <div class="lap-section" id="sw-lap-section" style="display:none">
+      <div class="lap-section-header">
+        <span data-i18n="laps">Giri</span>
+        <span id="sw-lap-count">0</span>
+      </div>
+      <ul class="lap-list" id="sw-lap-list"></ul>
+    </div>
+  </section>
+
+  <section class="widget" id="timer-widget">
+    <div class="widget-header">
+      <span class="widget-title" data-i18n="t-title">Timer</span>
+      <button class="fullscreen-btn" onclick="openFS('timer')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+        </svg>
+      </button>
+    </div>
+    <div class="progress-ring-wrap" id="timer-ring-wrap">
+      <svg width="180" height="180" viewBox="0 0 180 180">
+        <circle class="ring-bg" cx="90" cy="90" r="80"/>
+        <circle class="ring-fg" id="ring-fg" cx="90" cy="90" r="80" stroke-dasharray="502.65" stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-label">
+        <span class="ring-time" id="t-display">00:05:00</span>
+        <span class="ring-status" id="t-status" data-i18n="t-ready">Pronto</span>
+      </div>
+    </div>
+    <div class="timer-inputs" id="t-inputs">
+      <div class="time-input-group">
+        <label data-i18n="hours">Ore</label>
+        <input type="number" id="t-h" min="0" max="99" value="0" onchange="timerInputChange()"/>
+      </div>
+      <span class="time-sep">:</span>
+      <div class="time-input-group">
+        <label data-i18n="minutes">Min</label>
+        <input type="number" id="t-m" min="0" max="59" value="5" onchange="timerInputChange()"/>
+      </div>
+      <span class="time-sep">:</span>
+      <div class="time-input-group">
+        <label data-i18n="seconds">Sec</label>
+        <input type="number" id="t-s" min="0" max="59" value="0" onchange="timerInputChange()"/>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-primary" id="t-start-btn" onclick="tToggle()">
+        <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <span data-i18n="start">Avvia</span>
+      </button>
+      <button class="btn btn-danger" onclick="tReset()">
+        <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        <span data-i18n="reset">Reset</span>
+      </button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span data-i18n="copyright">&copy; 2024 Crono &amp; Timer. Tutti i diritti riservati.</span>
+</footer>
+
+<div class="fs-overlay" id="fs-stopwatch">
+  <button class="fs-close-btn" onclick="closeFS('stopwatch')">
+    <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span data-i18n="close">Chiudi</span>
+  </button>
+  <div class="fs-title" data-i18n="sw-title">Cronometro</div>
+  <div>
+    <div class="fs-time" id="fs-sw-display">00:00:00</div>
+    <div class="fs-ms" style="text-align:center" id="fs-sw-ms">.000</div>
+  </div>
+  <div class="fs-controls">
+    <button class="btn btn-primary" id="fs-sw-start-btn" onclick="swToggle()">
+      <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span data-i18n="start">Avvia</span>
+    </button>
+    <button class="btn btn-secondary" onclick="swLap()">
+      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span data-i18n="lap">Giro</span>
+    </button>
+    <button class="btn btn-danger" onclick="swReset()">
+      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+      <span data-i18n="reset">Reset</span>
+    </button>
+  </div>
+</div>
+
+<div class="fs-overlay" id="fs-timer">
+  <button class="fs-close-btn" onclick="closeFS('timer')">
+    <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span data-i18n="close">Chiudi</span>
+  </button>
+  <div class="fs-title" data-i18n="t-title">Timer</div>
+  <div class="fs-time" id="fs-t-display">00:05:00</div>
+  <div class="fs-controls">
+    <button class="btn btn-primary" id="fs-t-start-btn" onclick="tToggle()">
+      <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span data-i18n="start">Avvia</span>
+    </button>
+    <button class="btn btn-danger" onclick="tReset()">
+      <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+      <span data-i18n="reset">Reset</span>
+    </button>
+  </div>
+</div>
+
+<script>
+var LANGS = {
+  it: {
+    'sw-title':'Cronometro','t-title':'Timer',
+    'start':'Avvia','pause':'Pausa','lap':'Giro',
+    'reset':'Reset','laps':'Giri','close':'Chiudi',
+    't-ready':'Pronto','t-running':'In corso','t-paused':'In pausa','t-done':'Tempo!',
+    'hours':'Ore','minutes':'Min','seconds':'Sec',
+    'copyright':'\u00a9 2024 Crono & Timer. Tutti i diritti riservati.',
+    'theme-dark':'Dark','theme-light':'Light'
+  },
+  en: {
+    'sw-title':'Stopwatch','t-title':'Timer',
+    'start':'Start','pause':'Pause','lap':'Lap',
+    'reset':'Reset','laps':'Laps','close':'Close',
+    't-ready':'Ready','t-running':'Running','t-paused':'Paused','t-done':'Time!',
+    'hours':'Hours','minutes':'Min','seconds':'Sec',
+    'copyright':'\u00a9 2024 Crono & Timer. All rights reserved.',
+    'theme-dark':'Dark','theme-light':'Light'
+  }
+};
+var currentLang='it';
+function setLang(lang){
+  currentLang=lang;
+  document.documentElement.lang=lang;
+  document.getElementById('btn-it').classList.toggle('active',lang==='it');
+  document.getElementById('btn-en').classList.toggle('active',lang==='en');
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k=el.getAttribute('data-i18n');
+    if(LANGS[lang][k]!==undefined) el.textContent=LANGS[lang][k];
+  });
+  updateSwButtons(); updateTimerButtons();
+  var isDark=document.body.getAttribute('data-theme')==='dark';
+  document.getElementById('theme-label').textContent=isDark?LANGS[lang]['theme-light']:LANGS[lang]['theme-dark'];
+}
+function toggleTheme(){
+  var body=document.body;
+  var isDark=body.getAttribute('data-theme')==='dark';
+  body.setAttribute('data-theme',isDark?'light':'dark');
+  document.getElementById('theme-icon-moon').style.display=isDark?'block':'none';
+  document.getElementById('theme-icon-sun').style.display=isDark?'none':'block';
+  document.getElementById('theme-label').textContent=isDark?LANGS[currentLang]['theme-dark']:LANGS[currentLang]['theme-light'];
+}
+var swRunning=false,swStartTime=0,swElapsed=0,swRaf=null,swLaps=[];
+function swTick(){
+  swElapsed=performance.now()-swStartTime;
+  renderSw(swElapsed);
+  swRaf=requestAnimationFrame(swTick);
+}
+function renderSw(ms){
+  var t=Math.floor(ms);
+  var h=Math.floor(t/3600000),m=Math.floor((t%3600000)/60000),s=Math.floor((t%60000)/1000),msRemainder=t%1000;
+  var f=pad(h)+':'+pad(m)+':'+pad(s);
+  var mf='.'+String(msRemainder).padStart(3,'0');
+  document.getElementById('sw-display').textContent=f;
+  document.getElementById('sw-ms').textContent=mf;
+  document.getElementById('fs-sw-display').textContent=f;
+  document.getElementById('fs-sw-ms').textContent=mf;
+}
+function swToggle(){
+  if(swRunning){swRunning=false;swElapsed=performance.now()-swStartTime;cancelAnimationFrame(swRaf);}
+  else{swRunning=true;swStartTime=performance.now()-swElapsed;swRaf=requestAnimationFrame(swTick);}
+  updateSwButtons();
+}
+function swReset(){
+  swRunning=false;cancelAnimationFrame(swRaf);swElapsed=0;swStartTime=0;swLaps=[];
+  renderSw(0);updateSwButtons();
+  document.getElementById('sw-lap-section').style.display='none';
+  document.getElementById('sw-lap-list').innerHTML='';
+  document.getElementById('sw-lap-count').textContent='0';
+}
+function swLap(){
+  if(!swRunning&&swElapsed===0)return;
+  var now=swRunning?performance.now()-swStartTime:swElapsed;
+  swLaps.push(now);
+  document.getElementById('sw-lap-section').style.display='flex';
+  var list=document.getElementById('sw-lap-list');
+  var li=document.createElement('li');li.className='lap-item';
+  var lapMs=swLaps.length>1?now-swLaps[swLaps.length-2]:now;
+  var s1=document.createElement('span');s1.textContent='#'+swLaps.length;
+  var s2=document.createElement('span');s2.textContent=formatMs(now);
+  var s3=document.createElement('span');s3.style.color='var(--subtext)';s3.style.fontSize='.78rem';s3.textContent='+'+formatMs(lapMs);
+  li.appendChild(s1);li.appendChild(s2);li.appendChild(s3);
+  list.prepend(li);
+  document.getElementById('sw-lap-count').textContent=swLaps.length;
+}
+function updateSwButtons(){
+  var label=swRunning?LANGS[currentLang]['pause']:LANGS[currentLang]['start'];
+  ['sw-start-btn','fs-sw-start-btn'].forEach(function(id){
+    var btn=document.getElementById(id);
+    if(!btn)return;
+    btn.querySelector('.icon-play').style.display=swRunning?'none':'block';
+    btn.querySelector('.icon-pause').style.display=swRunning?'block':'none';
+    btn.querySelector('span').textContent=label;
+  });
+}
+var RING_CIRC=2*Math.PI*80;
+var tRunning=false,tTotalMs=300000,tRemainingMs=300000,tStartTime=0,tRaf=null,tAlarm=false;
+function timerInputChange(){
+  if(tRunning)return;
+  tTotalMs=getInputMs();tRemainingMs=tTotalMs;renderTimer(tRemainingMs);
+  tAlarm=false;document.getElementById('timer-ring-wrap').classList.remove('alarm-active');
+  setTimerStatus('t-ready');
+}
+function getInputMs(){
+  var h=parseInt(document.getElementById('t-h').value)||0;
+  var m=parseInt(document.getElementById('t-m').value)||0;
+  var s=parseInt(document.getElementById('t-s').value)||0;
+  return(h*3600+m*60+s)*1000;
+}
+function tTick(){
+  var elapsed=performance.now()-tStartTime;
+  tRemainingMs=Math.max(0,tTotalMs-elapsed);
+  renderTimer(tRemainingMs);
+  if(tRemainingMs<=0){
+    tRunning=false;tAlarm=true;
+    document.getElementById('timer-ring-wrap').classList.add('alarm-active');
+    setTimerStatus('t-done');updateTimerButtons();triggerAlarm();return;
+  }
+  tRaf=requestAnimationFrame(tTick);
+}
+function renderTimer(ms){
+  var total=Math.ceil(ms);
+  var h=Math.floor(total/3600000),m=Math.floor((total%3600000)/60000),s=Math.floor((total%60000)/1000);
+  var f=pad(h)+':'+pad(m)+':'+pad(s);
+  document.getElementById('t-display').textContent=f;
+  document.getElementById('fs-t-display').textContent=f;
+  var frac=tTotalMs>0?ms/tTotalMs:0;
+  document.getElementById('ring-fg').style.strokeDashoffset=RING_CIRC*(1-frac);
+}
+function tToggle(){
+  if(tAlarm){tReset();return;}
+  var ms=getInputMs();
+  if(!tRunning&&tRemainingMs<=0&&ms===0)return;
+  if(tRunning){
+    tRunning=false;tRemainingMs=Math.max(0,tTotalMs-(performance.now()-tStartTime));
+    cancelAnimationFrame(tRaf);setTimerStatus('t-paused');
+  }else{
+    if(tRemainingMs<=0){tTotalMs=ms;tRemainingMs=tTotalMs;}
+    tRunning=true;tTotalMs=tRemainingMs;tStartTime=performance.now();
+    tRaf=requestAnimationFrame(tTick);
+    document.getElementById('t-inputs').querySelectorAll('input').forEach(function(i){i.disabled=true;});
+    setTimerStatus('t-running');
+  }
+  updateTimerButtons();
+}
+function tReset(){
+  tRunning=false;cancelAnimationFrame(tRaf);tAlarm=false;
+  document.getElementById('timer-ring-wrap').classList.remove('alarm-active');
+  tTotalMs=getInputMs();tRemainingMs=tTotalMs;renderTimer(tRemainingMs);
+  document.getElementById('t-inputs').querySelectorAll('input').forEach(function(i){i.disabled=false;});
+  setTimerStatus('t-ready');updateTimerButtons();
+}
+function setTimerStatus(key){
+  var el=document.getElementById('t-status');
+  el.setAttribute('data-i18n',key);
+  el.textContent=LANGS[currentLang][key]||key;
+}
+function updateTimerButtons(){
+  var label=tRunning?LANGS[currentLang]['pause']:LANGS[currentLang]['start'];
+  ['t-start-btn','fs-t-start-btn'].forEach(function(id){
+    var btn=document.getElementById(id);
+    if(!btn)return;
+    btn.querySelector('.icon-play').style.display=tRunning?'none':'block';
+    btn.querySelector('.icon-pause').style.display=tRunning?'block':'none';
+    btn.querySelector('span').textContent=label;
+  });
+}
+var audioCtx=null;
+function triggerAlarm(){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    for(var i=0;i<3;i++){
+      (function(idx){
+        var osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+        osc.connect(gain);gain.connect(audioCtx.destination);
+        osc.type='sine';osc.frequency.value=880;
+        gain.gain.setValueAtTime(0.4,audioCtx.currentTime+idx*0.4);
+        gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+idx*0.4+0.35);
+        osc.start(audioCtx.currentTime+idx*0.4);
+        osc.stop(audioCtx.currentTime+idx*0.4+0.35);
+      })(i);
+    }
+  }catch(e){}
+}
+function openFS(w){document.getElementById('fs-'+w).classList.add('open');document.body.style.overflow='hidden';}
+function closeFS(w){document.getElementById('fs-'+w).classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeFS('stopwatch');closeFS('timer');}});
+function pad(n){return String(n).padStart(2,'0');}
+function formatMs(ms){
+  var t=Math.floor(ms);
+  var h=Math.floor(t/3600000),m=Math.floor((t%3600000)/60000),s=Math.floor((t%60000)/1000),msRemainder=t%1000;
+  return pad(h)+':'+pad(m)+':'+pad(s)+'.'+String(msRemainder).padStart(3,'0');
+}
+renderTimer(tRemainingMs);
+renderSw(0);
+setLang('it');
+</script>
+</body>
+</html>
