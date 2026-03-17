@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -85,7 +85,6 @@
     }
     .icon-btn:hover { background: var(--btn-secondary-hover); }
     .icon-btn svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
-    .lang-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     main {
       flex: 1;
       display: flex;
@@ -93,7 +92,7 @@
       gap: 1.5rem;
       padding: 2rem 1.5rem;
       justify-content: center;
-      align-items: flex-start;
+      align-items: stretch;
     }
     .widget {
       background: var(--widget-bg);
@@ -132,11 +131,11 @@
       transition: background .3s, border-color .3s;
     }
     .time-display {
-      font-size: 3.2rem; font-weight: 300;
+      font-size: 3.2rem; font-weight: 700;
       letter-spacing: .06em; font-variant-numeric: tabular-nums;
       line-height: 1; font-family: 'Courier New', monospace; color: var(--text);
     }
-    .ms-display { font-size: 1.4rem; font-weight: 300; color: var(--subtext); font-family: 'Courier New', monospace; }
+    .ms-display { display: none; }
     .controls { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
     .btn {
       border: none; border-radius: 10px; cursor: pointer;
@@ -183,7 +182,7 @@
     .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
     .ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .3s; }
     .ring-label { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-    .ring-time { font-size: 2.4rem; font-weight: 300; font-family: 'Courier New', monospace; letter-spacing: .05em; color: var(--text); line-height: 1; }
+    .ring-time { font-size: 2rem; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: .05em; color: var(--text); line-height: 1; }
     .ring-status { font-size: .75rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
     @keyframes pulse-alarm { 0%,100%{opacity:1} 50%{opacity:.4} }
     .alarm-active .ring-fg { stroke: var(--btn-danger); animation: pulse-alarm .6s infinite; }
@@ -204,11 +203,11 @@
     .fs-close-btn:hover { background: var(--btn-secondary-hover); }
     .fs-title { font-size: 1.1rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--subtext); }
     .fs-time {
-      font-size: clamp(5rem,20vw,14rem); font-weight: 200;
+      font-size: clamp(5rem,20vw,14rem); font-weight: 700;
       font-family: 'Courier New', monospace; letter-spacing: .04em;
       color: var(--text); line-height: 1; text-align: center;
     }
-    .fs-ms { font-size: clamp(2rem,6vw,4rem); font-weight: 200; font-family: 'Courier New', monospace; color: var(--subtext); }
+    .fs-ms { display: none; }
     .fs-controls { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
     .fs-controls .btn { font-size: 1.1rem; padding: .8rem 1.8rem; }
     footer { text-align: center; padding: 1rem; font-size: .8rem; color: var(--subtext); border-top: 1px solid var(--border); transition: border-color .3s; }
@@ -220,8 +219,6 @@
 <header>
   <h1>&#9201; Crono &amp; Timer</h1>
   <div class="header-controls">
-    <button class="icon-btn lang-btn active" id="btn-it" onclick="setLang('it')">&#127470;&#127481; IT</button>
-    <button class="icon-btn lang-btn" id="btn-en" onclick="setLang('en')">&#127468;&#127463; EN</button>
     <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">
       <svg id="theme-icon-moon" viewBox="0 0 24 24" fill="currentColor" style="display:block"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
       <svg id="theme-icon-sun" viewBox="0 0 24 24" fill="currentColor" style="display:none">
@@ -243,7 +240,7 @@
 <main>
   <section class="widget" id="stopwatch-widget">
     <div class="widget-header">
-      <span class="widget-title" data-i18n="sw-title">Cronometro</span>
+      <span class="widget-title" data-i18n="sw-title">Stopwatch</span>
       <button class="fullscreen-btn" onclick="openFS('stopwatch')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
@@ -259,11 +256,11 @@
       <button class="btn btn-primary" id="sw-start-btn" onclick="swToggle()">
         <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        <span data-i18n="start">Avvia</span>
+        <span data-i18n="start">Start</span>
       </button>
       <button class="btn btn-secondary" onclick="swLap()">
         <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span data-i18n="lap">Giro</span>
+        <span data-i18n="lap">Lap</span>
       </button>
       <button class="btn btn-danger" onclick="swReset()">
         <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
@@ -272,7 +269,7 @@
     </div>
     <div class="lap-section" id="sw-lap-section" style="display:none">
       <div class="lap-section-header">
-        <span data-i18n="laps">Giri</span>
+        <span data-i18n="laps">Laps</span>
         <span id="sw-lap-count">0</span>
       </div>
       <ul class="lap-list" id="sw-lap-list"></ul>
@@ -290,18 +287,18 @@
       </button>
     </div>
     <div class="progress-ring-wrap" id="timer-ring-wrap">
-      <svg width="180" height="180" viewBox="0 0 180 180">
-        <circle class="ring-bg" cx="90" cy="90" r="80"/>
-        <circle class="ring-fg" id="ring-fg" cx="90" cy="90" r="80" stroke-dasharray="502.65" stroke-dashoffset="0"/>
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="100"/>
+        <circle class="ring-fg" id="ring-fg" cx="110" cy="110" r="100" stroke-dasharray="628.32" stroke-dashoffset="0"/>
       </svg>
       <div class="ring-label">
         <span class="ring-time" id="t-display">00:05:00</span>
-        <span class="ring-status" id="t-status" data-i18n="t-ready">Pronto</span>
+        <span class="ring-status" id="t-status" data-i18n="t-ready">Ready</span>
       </div>
     </div>
     <div class="timer-inputs" id="t-inputs">
       <div class="time-input-group">
-        <label data-i18n="hours">Ore</label>
+        <label data-i18n="hours">Hours</label>
         <input type="number" id="t-h" min="0" max="99" value="0" onchange="timerInputChange()"/>
       </div>
       <span class="time-sep">:</span>
@@ -319,7 +316,7 @@
       <button class="btn btn-primary" id="t-start-btn" onclick="tToggle()">
         <svg class="icon-play" viewBox="0 0 24 24" width="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <svg class="icon-pause" viewBox="0 0 24 24" width="16" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        <span data-i18n="start">Avvia</span>
+        <span data-i18n="start">Start</span>
       </button>
       <button class="btn btn-danger" onclick="tReset()">
         <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
@@ -330,15 +327,15 @@
 </main>
 
 <footer>
-  <span data-i18n="copyright">&copy; 2024 Crono &amp; Timer. Tutti i diritti riservati.</span>
+  <span data-i18n="copyright">&copy; 2024 Crono &amp; Timer. All rights reserved.</span>
 </footer>
 
 <div class="fs-overlay" id="fs-stopwatch">
   <button class="fs-close-btn" onclick="closeFS('stopwatch')">
     <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    <span data-i18n="close">Chiudi</span>
+    <span data-i18n="close">Close</span>
   </button>
-  <div class="fs-title" data-i18n="sw-title">Cronometro</div>
+  <div class="fs-title" data-i18n="sw-title">Stopwatch</div>
   <div>
     <div class="fs-time" id="fs-sw-display">00:00:00</div>
     <div class="fs-ms" style="text-align:center" id="fs-sw-ms">.000</div>
@@ -347,11 +344,11 @@
     <button class="btn btn-primary" id="fs-sw-start-btn" onclick="swToggle()">
       <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-      <span data-i18n="start">Avvia</span>
+      <span data-i18n="start">Start</span>
     </button>
     <button class="btn btn-secondary" onclick="swLap()">
       <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span data-i18n="lap">Giro</span>
+      <span data-i18n="lap">Lap</span>
     </button>
     <button class="btn btn-danger" onclick="swReset()">
       <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
@@ -363,7 +360,7 @@
 <div class="fs-overlay" id="fs-timer">
   <button class="fs-close-btn" onclick="closeFS('timer')">
     <svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    <span data-i18n="close">Chiudi</span>
+    <span data-i18n="close">Close</span>
   </button>
   <div class="fs-title" data-i18n="t-title">Timer</div>
   <div class="fs-time" id="fs-t-display">00:05:00</div>
@@ -371,7 +368,7 @@
     <button class="btn btn-primary" id="fs-t-start-btn" onclick="tToggle()">
       <svg class="icon-play" viewBox="0 0 24 24" width="18" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <svg class="icon-pause" viewBox="0 0 24 24" width="18" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-      <span data-i18n="start">Avvia</span>
+      <span data-i18n="start">Start</span>
     </button>
     <button class="btn btn-danger" onclick="tReset()">
       <svg viewBox="0 0 24 24" width="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
@@ -401,12 +398,10 @@ var LANGS = {
     'theme-dark':'Dark','theme-light':'Light'
   }
 };
-var currentLang='it';
+var currentLang='en';
 function setLang(lang){
   currentLang=lang;
   document.documentElement.lang=lang;
-  document.getElementById('btn-it').classList.toggle('active',lang==='it');
-  document.getElementById('btn-en').classList.toggle('active',lang==='en');
   document.querySelectorAll('[data-i18n]').forEach(function(el){
     var k=el.getAttribute('data-i18n');
     if(LANGS[lang][k]!==undefined) el.textContent=LANGS[lang][k];
@@ -476,7 +471,7 @@ function updateSwButtons(){
     btn.querySelector('span').textContent=label;
   });
 }
-var RING_CIRC=2*Math.PI*80;
+var RING_CIRC=2*Math.PI*100;
 var tRunning=false,tTotalMs=300000,tRemainingMs=300000,tStartTime=0,tRaf=null,tAlarm=false;
 function timerInputChange(){
   if(tRunning)return;
@@ -576,7 +571,7 @@ function formatMs(ms){
 }
 renderTimer(tRemainingMs);
 renderSw(0);
-setLang('it');
+setLang('en');
 </script>
 </body>
 </html>
