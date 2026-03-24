@@ -116,34 +116,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ─── Stopwatch Logic ────────────────────────────────────────────────────
-    let swInterval, swStart, swElapsed = 0, lapCount = 0;
+    let swRequest, swStart, swElapsed = 0, lapCount = 0;
+    let lastSyncTime = 0;
+    const SYNC_INTERVAL = 33; // ~30fps sync is enough for dual screen
+
     const swDisplay = document.getElementById('stopwatch-display');
     const swStartBtn = document.getElementById('stopwatch-start');
     const swLapBtn = document.getElementById('stopwatch-lap');
     const swResetBtn = document.getElementById('stopwatch-reset');
     const lapsList = document.getElementById('laps-list');
 
+    if (swDisplay) swDisplay.style.willChange = 'contents';
+
     const updateSw = () => {
         const now = Date.now();
-        const displayValue = formatTime(now - swStart + swElapsed);
+        const elapsedSinceStart = now - swStart + swElapsed;
+        const displayValue = formatTime(elapsedSinceStart);
+        
+        // Local UI update
         swDisplay.textContent = displayValue;
-        bc.postMessage({ tool: 'stopwatch', action: 'tick', display: displayValue });
+
+        // Throttled sync update
+        if (now - lastSyncTime > SYNC_INTERVAL) {
+            bc.postMessage({ tool: 'stopwatch', action: 'tick', display: displayValue });
+            lastSyncTime = now;
+        }
+
+        swRequest = requestAnimationFrame(updateSw);
     };
 
     if (swStartBtn) {
         swStartBtn.addEventListener('click', () => {
-            if (swInterval) {
+            if (swRequest) {
                 // Pause
-                clearInterval(swInterval);
-                swInterval = null;
+                cancelAnimationFrame(swRequest);
+                swRequest = null;
                 swElapsed += Date.now() - swStart;
                 swStartBtn.textContent = '▶';
                 swStartBtn.title = 'Start';
                 swLapBtn.disabled = true;
+                // Final sync on pause
+                bc.postMessage({ tool: 'stopwatch', action: 'tick', display: formatTime(swElapsed) });
             } else {
                 // Start
                 swStart = Date.now();
-                swInterval = setInterval(updateSw, 10);
+                swRequest = requestAnimationFrame(updateSw);
                 swStartBtn.textContent = '⏸';
                 swStartBtn.title = 'Pause';
                 swLapBtn.disabled = false;
@@ -153,8 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (swResetBtn) {
         swResetBtn.addEventListener('click', () => {
-            clearInterval(swInterval);
-            swInterval = null;
+            if (swRequest) {
+                cancelAnimationFrame(swRequest);
+                swRequest = null;
+            }
             swElapsed = 0;
             lapCount = 0;
             swDisplay.textContent = '00:00:00.00';

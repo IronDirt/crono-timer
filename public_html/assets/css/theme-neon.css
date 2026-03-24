@@ -75,15 +75,15 @@ body.theme-neon .logo-title .accent {
 body.theme-neon .timer-display {
     font-family: 'Orbitron', monospace;
     color: #00ffaa;
+    will-change: text-shadow, contents;
     text-shadow:
-        0 0 10px rgba(0,255,170,0.9),
-        0 0 30px rgba(0,255,170,0.6),
-        0 0 80px rgba(0,255,170,0.3);
+        0 0 10px rgba(0,255,170,0.8),
+        0 0 30px rgba(0,255,170,0.4);
     animation: neonPulse 2s ease-in-out infinite alternate;
 }
 @keyframes neonPulse {
-    from { text-shadow: 0 0 10px rgba(0,255,170,0.9), 0 0 30px rgba(0,255,170,0.5), 0 0 80px rgba(0,255,170,0.2); }
-    to   { text-shadow: 0 0 14px rgba(0,255,170,1),   0 0 50px rgba(0,255,170,0.7), 0 0 120px rgba(0,255,170,0.4); }
+    from { text-shadow: 0 0 10px rgba(0,255,170,0.8), 0 0 30px rgba(0,255,170,0.4); }
+    to   { text-shadow: 0 0 15px rgba(0,255,170,1),   0 0 45px rgba(0,255,170,0.6); }
 }
 
 /* Neon buttons (square instead of circle for cyber aesthetic) */
