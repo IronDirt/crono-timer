@@ -96,8 +96,9 @@ body.theme-futuristic .logo-title .accent {
 
 /* Timer Display — ring border effect */
 body.theme-futuristic .timer-display {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Share Tech Mono', monospace;
     font-weight: 900;
+    font-variant-numeric: tabular-nums;
     letter-spacing: 0.04em;
     color: #ffffff;
     will-change: filter, contents;

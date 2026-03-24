@@ -71,7 +71,8 @@ body.theme-neon .logo-title .accent {
 
 /* Neon timer glow */
 body.theme-neon .timer-display {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Share Tech Mono', monospace;
+    font-variant-numeric: tabular-nums;
     color: #00ffaa;
     will-change: text-shadow, contents;
     text-shadow:
