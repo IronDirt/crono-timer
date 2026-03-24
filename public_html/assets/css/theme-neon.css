@@ -30,7 +30,7 @@ body.theme-neon::before {
     pointer-events: none;
     z-index: 0;
 }
-body.theme-neon > * { position: relative; z-index: 1; }
+body.theme-neon > * { position: relative; } /* Removed z-index override */
 
 /* Scanline overlay */
 body.theme-neon::after {
@@ -50,14 +50,12 @@ body.theme-neon::after {
 
 /* Header neon border */
 body.theme-neon header {
-    background: rgba(5,5,16,0.9);
-    border-bottom-color: rgba(0,255,170,0.3);
+    background: rgba(5,13,28,0.92);
+    border-bottom: 1px solid rgba(0,255,170,0.3);
     box-shadow: 0 1px 0 rgba(0,255,170,0.15);
-}
-
-body.theme-neon nav {
-    background: rgba(14,14,40,0.8);
-    border-color: rgba(0,255,170,0.2);
+    position: sticky; /* Keep it sticky */
+    top: 0;
+    z-index: 2000; /* Higher than scanlines (z-index 2) */
     backdrop-filter: blur(12px);
 }
 

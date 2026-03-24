@@ -52,13 +52,16 @@ body.theme-futuristic::after {
     pointer-events: none;
     z-index: 0;
 }
-body.theme-futuristic > * { position: relative; z-index: 1; }
+body.theme-futuristic > * { position: relative; } /* Removed z-index override */
 
 /* Header */
 body.theme-futuristic header {
-    background: rgba(2,8,24,0.9);
-    border-bottom: 1px solid rgba(0,200,255,0.2);
+    background: rgba(2,12,32,0.92);
+    border-bottom: 1px solid rgba(0,200,255,0.25);
     box-shadow: 0 1px 0 rgba(0,200,255,0.1), 0 4px 40px rgba(0,200,255,0.05);
+    position: sticky; /* Keep it sticky */
+    top: 0;
+    z-index: 2000;
     backdrop-filter: blur(20px);
 }
 
