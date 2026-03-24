@@ -1,0 +1,164 @@
+/* ============================================================
+   THEME: NEON CYBERPUNK
+   ============================================================ */
+
+body.theme-neon {
+    --bg:           #050510;
+    --bg2:          #0a0a1f;
+    --surface:      #0e0e28;
+    --border:       rgba(0,255,170,0.18);
+    --text:         #e0fff8;
+    --text2:        #5aff9f55;
+    --accent:       #00ffaa;
+    --accent-glow:  rgba(0,255,170,0.35);
+    --danger:       #ff2d78;
+    --success:      #00ffaa;
+    --font-display: 'Orbitron', monospace;
+    --shadow:       0 0 40px rgba(0,255,170,0.2);
+    --glass:        rgba(0,255,170,0.04);
+    --radius:       8px;
+}
+
+/* Animated gradient background */
+body.theme-neon::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(128,0,255,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(0,255,170,0.10) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+body.theme-neon > * { position: relative; z-index: 1; }
+
+/* Scanline overlay */
+body.theme-neon::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0,255,170,0.015) 0px,
+        rgba(0,255,170,0.015) 1px,
+        transparent 1px,
+        transparent 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Header neon border */
+body.theme-neon header {
+    background: rgba(5,5,16,0.9);
+    border-bottom-color: rgba(0,255,170,0.3);
+    box-shadow: 0 1px 0 rgba(0,255,170,0.15);
+}
+
+body.theme-neon nav {
+    background: rgba(14,14,40,0.8);
+    border-color: rgba(0,255,170,0.2);
+    backdrop-filter: blur(12px);
+}
+
+body.theme-neon .logo-title {
+    font-family: 'Orbitron', monospace;
+    text-shadow: 0 0 20px rgba(0,255,170,0.6), 0 0 60px rgba(0,255,170,0.2);
+    letter-spacing: 0.05em;
+}
+body.theme-neon .logo-title .accent {
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,255,170,0.8), 0 0 80px rgba(0,255,170,0.3);
+}
+
+/* Neon timer glow */
+body.theme-neon .timer-display {
+    font-family: 'Orbitron', monospace;
+    color: #00ffaa;
+    text-shadow:
+        0 0 10px rgba(0,255,170,0.9),
+        0 0 30px rgba(0,255,170,0.6),
+        0 0 80px rgba(0,255,170,0.3);
+    animation: neonPulse 2s ease-in-out infinite alternate;
+}
+@keyframes neonPulse {
+    from { text-shadow: 0 0 10px rgba(0,255,170,0.9), 0 0 30px rgba(0,255,170,0.5), 0 0 80px rgba(0,255,170,0.2); }
+    to   { text-shadow: 0 0 14px rgba(0,255,170,1),   0 0 50px rgba(0,255,170,0.7), 0 0 120px rgba(0,255,170,0.4); }
+}
+
+/* Neon buttons (square instead of circle for cyber aesthetic) */
+body.theme-neon .btn {
+    border-radius: 6px;
+    border: 1px solid rgba(0,255,170,0.3);
+    background: rgba(0,255,170,0.06);
+    color: #00ffaa;
+    text-shadow: 0 0 8px rgba(0,255,170,0.8);
+    box-shadow: 0 0 12px rgba(0,255,170,0.15), inset 0 0 12px rgba(0,255,170,0.04);
+    transition: all 0.2s ease;
+}
+body.theme-neon .btn-primary {
+    background: rgba(0,255,170,0.15);
+    border-color: #00ffaa;
+    box-shadow: 0 0 20px rgba(0,255,170,0.4), inset 0 0 20px rgba(0,255,170,0.06);
+    color: #00ffaa;
+}
+body.theme-neon .btn-danger {
+    border-color: #ff2d78;
+    color: #ff2d78;
+    text-shadow: 0 0 8px rgba(255,45,120,0.8);
+}
+body.theme-neon .btn:hover:not(:disabled) {
+    box-shadow: 0 0 30px rgba(0,255,170,0.6), inset 0 0 30px rgba(0,255,170,0.1);
+    transform: scale(1.06);
+}
+
+/* Neon nav */
+body.theme-neon .nav-links a.active,
+body.theme-neon .nav-links a:hover {
+    background: rgba(0,255,170,0.15);
+    color: #00ffaa;
+    box-shadow: 0 0 14px rgba(0,255,170,0.3);
+}
+
+body.theme-neon .icon-btn {
+    border-color: rgba(0,255,170,0.2);
+    color: rgba(0,255,170,0.7);
+}
+body.theme-neon .icon-btn:hover {
+    border-color: #00ffaa;
+    color: #00ffaa;
+    box-shadow: 0 0 12px rgba(0,255,170,0.4);
+    background: rgba(0,255,170,0.08);
+}
+
+/* Input neon style */
+body.theme-neon .input-field input {
+    border-radius: 6px;
+    border-color: rgba(0,255,170,0.25);
+    background: rgba(0,255,170,0.04);
+    color: #00ffaa;
+    text-shadow: 0 0 10px rgba(0,255,170,0.6);
+    font-family: 'Orbitron', monospace;
+}
+body.theme-neon .input-field input:focus {
+    border-color: #00ffaa;
+    box-shadow: 0 0 0 3px rgba(0,255,170,0.2), 0 0 20px rgba(0,255,170,0.2);
+}
+body.theme-neon .input-field label {
+    color: rgba(0,255,170,0.6);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+}
+
+/* Laps */
+body.theme-neon .laps-container {
+    border-color: rgba(0,255,170,0.2);
+    background: rgba(14,14,40,0.8);
+}
+body.theme-neon .lap-item { border-bottom-color: rgba(0,255,170,0.1); }
+body.theme-neon .lap-item .lap-time { color: #00ffaa; }
+
+body.theme-neon footer {
+    border-top-color: rgba(0,255,170,0.15);
+    color: rgba(0,255,170,0.4);
+}
